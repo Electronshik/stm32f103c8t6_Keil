@@ -9,10 +9,10 @@
   * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software component is licensed by ST under Ultimate Liberty license
+  * SLA0044, the "License"; You may not use this file except in compliance with
+  * the License. You may obtain a copy of the License at:
+  *                             www.st.com/SLA0044
   *
   ******************************************************************************
   */
@@ -20,22 +20,62 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 #include "stdio.h"
 #include "string"
 #include "ssd1306.hpp"
-//using namespace std;
+#include "tda7300.hpp"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+/* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart1;
 OLED Display;
-/* USER CODE BEGIN PV */
+TDA7300 Volume;
 
+osThreadId_t InitTaskHandle;
+osThreadId_t DisplayTaskHandle;
+osThreadId_t VolumeTaskHandle;
+osThreadId_t ControlTaskHandle;
+osMessageQueueId_t VolumeQueueHandle;
+osThreadAttr_t InitTask_attributes;
+osThreadAttr_t DisplayTask_attributes;
+osThreadAttr_t VolumeTask_attributes;
+osThreadAttr_t ControlTask_attributes;
+osMessageQueueAttr_t VolumeQueue_attributes;
+/* USER CODE BEGIN PV */
+int std::fputc (int ch, FILE *f)
+{
+	HAL_UART_Transmit (&huart1, (uint8_t *)&ch, 1, 0xFFFF);
+	return ch;
+}
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
+void StartInitTask(void *argument);
+void StartDisplayTask(void *argument);
+void StartVolumeTask(void *argument);
+void StartControlTask(void *argument);
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -51,48 +91,97 @@ static void MX_USART1_UART_Init(void);
   */
 int main(void)
 {
-	/* USER CODE BEGIN 1 */
+  /* USER CODE BEGIN 1 */
 	std::string Str;
 	uint8_t status;
-	/* USER CODE END 1 */
-	/* MCU Configuration--------------------------------------------------------*/
-
-	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-	HAL_Init();
-	/* USER CODE BEGIN Init */
-	/* USER CODE END Init */
-	/* Configure the system clock */
-	SystemClock_Config();
-
-	/* USER CODE BEGIN SysInit */
-	/* USER CODE END SysInit */
-
-	/* Initialize all configured peripherals */
-	MX_GPIO_Init();
-	MX_USART1_UART_Init();
-	/* USER CODE BEGIN 2 */
+  /* USER CODE END 1 */
+  /* MCU Configuration--------------------------------------------------------*/
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
+  /* USER CODE BEGIN Init */
+  /* USER CODE END Init */
+  /* Configure the system clock */
+  SystemClock_Config();
+  /* USER CODE BEGIN SysInit */
+  /* USER CODE END SysInit */
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_USART1_UART_Init();
+  /* USER CODE BEGIN 2 */
 	Str = "Hello stm32f103";
 	printf("%s", (Str + "\r\n").c_str());
-	status = Display.Init();
+	//status = Display.Init();
 	if (status == 0)
 	{
 		printf("LCD Error!");
 	}
 	Str = "Hello!";
+	/*
 	Display.Puts((char*)Str.c_str(), &Font_7x10, 1);
 	Display.UpdateScreen();
-	/* Infinite loop */
 	Display.Puts("dfsgfds", &Font_7x10, 1);
 	Display.UpdateScreen();
-	Display.Fill(Display.COLOR_WHITE);
-	/* USER CODE BEGIN WHILE */
-	while (1)
-	{
-		/* USER CODE END WHILE */
+	Display.Fill(Display.COLOR_WHITE);*/
+  /* USER CODE END 2 */
+  /* Init scheduler */
+	 osKernelInitialize();
 
-		/* USER CODE BEGIN 3 */
-	}
-		/* USER CODE END 3 */
+	/* USER CODE BEGIN RTOS_MUTEX */
+	InitTask_attributes.name = "InitTask";
+	InitTask_attributes.priority = (osPriority_t) osPriorityNormal;
+	InitTask_attributes.stack_size = 256 * 4;
+	DisplayTask_attributes.name = "DisplayTask";
+	DisplayTask_attributes.priority = (osPriority_t) osPriorityBelowNormal;
+	DisplayTask_attributes.stack_size = 512 * 4;
+	VolumeTask_attributes.name = "VolumeTask";
+	VolumeTask_attributes.priority = (osPriority_t) osPriorityNormal;
+	VolumeTask_attributes.stack_size = 256 * 4;
+	ControlTask_attributes.name = "ControlTask";
+	ControlTask_attributes.priority = (osPriority_t) osPriorityAboveNormal;
+	ControlTask_attributes.stack_size = 256 * 4; 
+
+
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* Create the queue(s) */
+  /* creation of VolumeQueue */
+	VolumeQueue_attributes.name = "VolumeQueue";
+	VolumeQueueHandle = osMessageQueueNew (8, sizeof(uint16_t), &VolumeQueue_attributes);
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* creation of InitTask */
+  InitTaskHandle = osThreadNew(StartInitTask, NULL, &InitTask_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* Start scheduler */
+  printf("osKernelStart.. \r\n");
+  osKernelStart();
+ 
+  /* We should never get here as control is now taken by the scheduler */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+  }
+  /* USER CODE END 3 */
 }
 
 /**
@@ -136,13 +225,9 @@ void SystemClock_Config(void)
   */
 static void MX_USART1_UART_Init(void)
 {
-
   /* USER CODE BEGIN USART1_Init 0 */
-
   /* USER CODE END USART1_Init 0 */
-
   /* USER CODE BEGIN USART1_Init 1 */
-
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
   huart1.Init.BaudRate = 115200;
@@ -157,14 +242,9 @@ static void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
+
   /* USER CODE END USART1_Init 2 */
 
-}
-
-int std::fputc (int ch, FILE *f)
-{
-	HAL_UART_Transmit (&huart1, (uint8_t *)&ch, 1, 0xFFFF);
-	return ch;
 }
 
 /**
@@ -174,17 +254,123 @@ int std::fputc (int ch, FILE *f)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
+  /*Configure GPIO pins : ENC_BUTTON_Pin ENC_B_Pin */
+  GPIO_InitStruct.Pin = ENC_BUTTON_Pin|ENC_B_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_StartInitTask */
+/**
+  * @brief  Function implementing the InitTask thread.
+  * @param  argument: Not used 
+  * @retval None
+  */
+/* USER CODE END Header_StartInitTask */
+void StartInitTask(void *argument)
+{
+  /* USER CODE BEGIN 5 */
+	std::printf("StartInitTask.. \r\n");
+	//DisplayTaskHandle = osThreadNew(StartDisplayTask, NULL, &DisplayTask_attributes);
+	//VolumeTaskHandle = osThreadNew(StartVolumeTask, NULL, &VolumeTask_attributes);
+	//ControlTaskHandle = osThreadNew(StartControlTask, NULL, &ControlTask_attributes);
+  /* Infinite loop */
+	for(;;)
+	{
+		std::printf("Init.. \r\n");
+		osDelay(1000);
+	}
+  /* USER CODE END 5 */ 
+}
+
+/* USER CODE BEGIN Header_StartDisplayTask */
+/**
+* @brief Function implementing the DisplayTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartDisplayTask */
+void StartDisplayTask(void *argument)
+{
+  /* USER CODE BEGIN StartDisplayTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(10);
+  }
+  /* USER CODE END StartDisplayTask */
+}
+
+/* USER CODE BEGIN Header_StartVolumeTask */
+/**
+* @brief Function implementing the VolumeTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartVolumeTask */
+void StartVolumeTask(void *argument)
+{
+  /* USER CODE BEGIN StartVolumeTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(10);
+  }
+  /* USER CODE END StartVolumeTask */
+}
+
+/* USER CODE BEGIN Header_StartControlTask */
+/**
+* @brief Function implementing the ControlTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartControlTask */
+void StartControlTask(void *argument)
+{
+  /* USER CODE BEGIN StartControlTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(10);
+  }
+  /* USER CODE END StartControlTask */
+}
+
+ /**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM1 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM1)
+	{
+		HAL_IncTick();
+	}
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

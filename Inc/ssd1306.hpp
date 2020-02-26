@@ -1,5 +1,5 @@
-#ifndef H
-#define H
+#ifndef SSD1306_H
+#define SSD1306_H
 
 extern "C"
 {

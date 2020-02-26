@@ -25,7 +25,18 @@ stm32f103c8t6\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 stm32f103c8t6\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 stm32f103c8t6\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h
 stm32f103c8t6\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
+stm32f103c8t6\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
+stm32f103c8t6\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 stm32f103c8t6\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+stm32f103c8t6\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h
+stm32f103c8t6\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
+stm32f103c8t6\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+stm32f103c8t6\main.o: ../Inc/FreeRTOSConfig.h
+stm32f103c8t6\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+stm32f103c8t6\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+stm32f103c8t6\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+stm32f103c8t6\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/portmacro.h
+stm32f103c8t6\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
 stm32f103c8t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 stm32f103c8t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string
 stm32f103c8t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\iosfwd
@@ -62,4 +73,5 @@ stm32f103c8t6\main.o: ../Inc/ssd1306.hpp
 stm32f103c8t6\main.o: ../Inc/fonts.h
 stm32f103c8t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 stm32f103c8t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+stm32f103c8t6\main.o: ../Inc/tda7300.hpp
 stm32f103c8t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.CC
