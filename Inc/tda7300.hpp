@@ -1,5 +1,6 @@
-#ifndef TDA7300_H
-#define TDA7300_H
+#pragma once
+#ifndef __TDA7300_H__
+#define __TDA7300_H__
 
 extern "C"
 {
@@ -145,7 +146,7 @@ union Reg_Treble_Control_t
 class TDA7300
 {
 	public:
-		TDA7300();
+		TDA7300(I2C_HandleTypeDef *);
 		void Set_Volume (uint8_t value);
 		void Set_Audio_Switch (Audio_Switch_t input);
 	private:
@@ -158,7 +159,7 @@ class TDA7300
 		Reg_Audio_Switch_t Audio_Switch;
 		Reg_Bass_Control_t Bass_Control;
 		Reg_Treble_Control_t Treble_Control;
-		I2C_HandleTypeDef hi2c2;
+		I2C_HandleTypeDef *hi2c2;
 		void I2C_Init();
 		void I2C_Write (uint8_t value);
 };

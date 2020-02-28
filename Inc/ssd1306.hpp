@@ -1,5 +1,6 @@
-#ifndef SSD1306_H
-#define SSD1306_H
+#pragma once
+#ifndef __SSD1306_H__
+#define __SSD1306_H__
 
 extern "C"
 {

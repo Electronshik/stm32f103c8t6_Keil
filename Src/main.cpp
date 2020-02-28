@@ -19,10 +19,14 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+//#include <map>
+//#include <set>
+//#include <string>
 #include "main.h"
 #include "cmsis_os.h"
 #include "stdio.h"
 #include "string"
+#include "settings.hpp"
 #include "ssd1306.hpp"
 #include "tda7300.hpp"
 
@@ -46,8 +50,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart1;
+I2C_HandleTypeDef hi2c2;
 OLED Display;
-TDA7300 Volume;
 
 osThreadId_t InitTaskHandle;
 osThreadId_t DisplayTaskHandle;
@@ -68,13 +72,14 @@ int std::fputc (int ch, FILE *f)
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_USART1_UART_Init(void);
-void StartInitTask(void *argument);
-void StartDisplayTask(void *argument);
-void StartVolumeTask(void *argument);
-void StartControlTask(void *argument);
+void SystemClock_Config (void);
+static void MX_GPIO_Init (void);
+static void MX_USART1_UART_Init (void);
+static void MX_I2C2_Init (void);
+void StartInitTask (void *argument);
+void StartDisplayTask (void *argument);
+void StartVolumeTask (void *argument);
+void StartControlTask (void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -82,14 +87,15 @@ void StartControlTask(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+//std::map <int, auto> dict;
+//std::set <auto> S;
 /* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
   * @retval int
   */
-int main(void)
+int main (void)
 {
   /* USER CODE BEGIN 1 */
 	std::string Str;
@@ -107,6 +113,8 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART1_UART_Init();
+	MX_I2C2_Init();
+	TDA7300 Volume = TDA7300(&hi2c2);
   /* USER CODE BEGIN 2 */
 	Str = "Hello stm32f103";
 	printf("%s", (Str + "\r\n").c_str());
@@ -116,6 +124,7 @@ int main(void)
 		printf("LCD Error!");
 	}
 	Str = "Hello!";
+	
 	/*
 	Display.Puts((char*)Str.c_str(), &Font_7x10, 1);
 	Display.UpdateScreen();
@@ -252,7 +261,7 @@ static void MX_USART1_UART_Init(void)
   * @param None
   * @retval None
   */
-static void MX_GPIO_Init(void)
+static void MX_GPIO_Init (void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
@@ -270,7 +279,22 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void MX_I2C2_Init (void)
+{
+	hi2c2.Instance = I2C2;
+	hi2c2.Init.ClockSpeed = 100000;
+	hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
+	hi2c2.Init.OwnAddress1 = 0;
+	hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+	hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+	hi2c2.Init.OwnAddress2 = 0;
+	hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+	hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+	if (HAL_I2C_Init(&hi2c2) != HAL_OK)
+	{
+		//Error_Handler();
+	}
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartInitTask */
