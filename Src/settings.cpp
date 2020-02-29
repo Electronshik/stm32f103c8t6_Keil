@@ -13,41 +13,18 @@ SETTINGS::SETTINGS (I2C_HandleTypeDef *hi2c2)
 	BackUp_Address = ((sizeof(Settings) / 64) + 1) * 64 + MEMORY_ADDRESS * 2;
 }
 
-bool SETTINGS::Get_Setting (Settings_List_Bool_t Setting)
+template <typename T>
+T SETTINGS::Get_Setting (Settings_List_t Setting)
 {
-
+	return Settings.Data[Setting];
 }
 
-unsigned char SETTINGS::Get_Setting (Settings_List_UChar_t Setting)
+template <typename T>
+void SETTINGS::Set_Setting (Settings_List_t Setting, T Value)
 {
-
+	Settings.Data[Setting] = Value;
 }
-
-char SETTINGS::Get_Setting (Settings_List_Char_t Setting)
-{
-
-}
-
-unsigned int SETTINGS::Get_Setting (Settings_List_UInt_t Setting)
-{
-
-}
-
-int SETTINGS::Get_Setting (Settings_List_Int_t Setting)
-{
-
-}
-
-float SETTINGS::Get_Setting (Settings_List_Float_t Setting)
-{
-
-}
-
-void SETTINGS::Set_Setting (Settings_List_Bool_t Setting, bool Value)
-{
-	
-}
-
+/*
 void SETTINGS::Set_Setting (Settings_List_UChar_t Setting, unsigned char Value)
 {
 	
@@ -71,7 +48,7 @@ void SETTINGS::Set_Setting (Settings_List_Int_t Setting, int Value)
 void SETTINGS::Set_Setting (Settings_List_Float_t Setting, float Value)
 {
 	
-}
+}*/
 
 void SETTINGS::Save (void)
 {

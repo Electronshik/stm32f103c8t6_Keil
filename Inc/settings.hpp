@@ -9,39 +9,15 @@ extern "C"
 
 typedef enum
 {
-	DEF_B,
-} Settings_List_Bool_t;
-
-typedef enum
-{
+	VOLUME,
 	SPEAKER_LF,
 	SPEAKER_RF,
 	SPEAKER_LR,
 	SPEAKER_RR,
+	AUDIO_SWITCH,
 	BASS_CONTROL,
 	TREBLE_CONTROL,
-} Settings_List_Char_t;
-
-typedef enum
-{
-	VOLUME,
-	AUDIO_SWITCH,
-} Settings_List_UChar_t;
-
-typedef enum
-{
-	DEF_UI,
-} Settings_List_UInt_t;
-
-typedef enum
-{
-	DEF_I,
-} Settings_List_Int_t;
-
-typedef enum
-{
-	DEF_F,
-} Settings_List_Float_t;
+} Settings_List_t;
 
 //~ Main settings ~//
 #pragma pack (push, 1)
@@ -49,18 +25,10 @@ typedef enum
 typedef struct
 {
 	unsigned char Writing_Tag_Begin;
-	int Volime;
+	int Data[8];
 	unsigned char Writing_Tag_End;
 
 } Settings_t;
-
-typedef struct
-{
-	unsigned char Code;
-	unsigned char Subcode;
-	unsigned int Timestamp;
-
-} Error_Log_t;
 
 #pragma pack (pop)
 //~ Main settings ~//
@@ -71,18 +39,16 @@ class SETTINGS
 		SETTINGS (I2C_HandleTypeDef *);
 		void Init (bool Reset_To_Default);
 		void Save ();
-		bool Get_Setting (Settings_List_Bool_t Setting);
-		unsigned char Get_Setting (Settings_List_UChar_t Setting);
-		char Get_Setting (Settings_List_Char_t Setting);
-		unsigned int Get_Setting (Settings_List_UInt_t Setting);
-		int Get_Setting (Settings_List_Int_t Setting);
-		float Get_Setting (Settings_List_Float_t Setting);
-		void Set_Setting (Settings_List_Bool_t Setting, bool Value);
+		template <typename T>
+		T Get_Setting (Settings_List_t Setting);
+		template <typename T>
+		void Set_Setting (Settings_List_t Setting, T Value);
+		/*
 		void Set_Setting (Settings_List_UChar_t Setting, unsigned char Value);
 		void Set_Setting (Settings_List_Char_t Setting, char Value);
 		void Set_Setting (Settings_List_UInt_t Setting, unsigned int Value);
 		void Set_Setting (Settings_List_Int_t Setting, int Value);
-		void Set_Setting (Settings_List_Float_t Setting, float Value);
+		void Set_Setting (Settings_List_Float_t Setting, float Value);*/
 	private:
 		Settings_t Settings;
 		unsigned int BackUp_Address;
