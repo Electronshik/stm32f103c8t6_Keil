@@ -25,8 +25,8 @@ uint8_t OLED::Init (void)
 	uint32_t p = 2500;
 	while(p>0)
 		p--;
-
 	/* Init LCD */
+	/*
 	I2C_Write_Command(0xAE); //display off
 	I2C_Write_Command(0x20); //Set Memory Addressing Mode   
 	I2C_Write_Command(0x10); //00,Horizontal Addressing Mode;01,Vertical Addressing Mode;10,Page Addressing Mode (RESET);11,Invalid
@@ -55,6 +55,35 @@ uint8_t OLED::Init (void)
 	I2C_Write_Command(0x8D); //--set DC-DC enable
 	I2C_Write_Command(0x14); //
 	I2C_Write_Command(0xAF); //--turn on SSD1306 panel
+	*/
+	I2C_Write_Command(0x8D);  
+	I2C_Write_Command(0x10);
+	I2C_Write_Command(0xAE);  
+	I2C_Write_Command(0xD5); //--set display clock divide ratio/oscillator frequency
+	I2C_Write_Command(0x80); //display off
+	I2C_Write_Command(0xA8); //Set Memory Addressing Mode   
+	I2C_Write_Command(0x3F); //00,Horizontal Addressing Mode;01,Vertical Addressing Mode;10,Page Addressing Mode (RESET);11,Invalid
+	I2C_Write_Command(0xD3); //Set Page Start Address for Page Addressing Mode,0-7
+	I2C_Write_Command(0x00); //Set COM Output Scan Direction
+	I2C_Write_Command(0x40); //---set low column address
+	I2C_Write_Command(0x8D); //---set high column address
+	I2C_Write_Command(0x14); //--set start line address
+	I2C_Write_Command(0x20); //--set contrast control register
+	I2C_Write_Command(0x00);//
+	I2C_Write_Command(0xA1); //--set segment re-map 0 to 127
+	I2C_Write_Command(0xC8); //--set normal display
+	I2C_Write_Command(0xDA); //--set multiplex ratio(1 to 64)
+	I2C_Write_Command(0x12);
+	I2C_Write_Command(0xCF); //0xa4,Output follows RAM content;0xa5,Output ignores RAM content
+	I2C_Write_Command(0xD9); //-set display offset
+	I2C_Write_Command(0xF1); //-not offset
+	I2C_Write_Command(0xD8); //--set divide ratio
+	I2C_Write_Command(0x40); //--set pre-charge period
+	I2C_Write_Command(0xA4); //
+	I2C_Write_Command(0xDA); //--set com pins hardware configuration
+	I2C_Write_Command(0x8D);  
+	I2C_Write_Command(0x14);  
+	I2C_Write_Command(0xAF);  
 	
 	Fill(COLOR_BLACK);
 	UpdateScreen();
@@ -67,25 +96,12 @@ uint8_t OLED::Init (void)
 
 void OLED::UpdateScreen (void)
 {
-	uint8_t m;
-	
-	for (m = 0; m < 8; m++)
-	{
-		I2C_Write_Command(0xB0 + m);
-		I2C_Write_Command(0x00);
-		I2C_Write_Command(0x10);
-		
-		/* Write multi data */
-		I2C_WriteMulti (I2C_ADDR, 0x40, &Buffer[WIDTH * m], WIDTH);
-	}
-	
-	/*
 	Buffer_All[0] = 0x40;
 	HAL_I2C_Master_Transmit_DMA(&hi2c1, I2C_ADDR, Buffer_All, WIDTH * HEIGHT / 8 + 1);
 	while(HAL_DMA_GetState(hi2c1.hdmatx) != HAL_DMA_STATE_READY)
 	{
 		HAL_Delay(1); //Change for your RTOS
-	}*/
+	}
 }
 
 void OLED::ToggleInvert (void)
@@ -133,7 +149,6 @@ char OLED::Putc (char ch, FontDef_t* Font, uint8_t color)
 {
 	uint32_t i, b, j;
 	b = 0;
-	/*
 	for (i = 0; i < Font->FontHeight; i++)
 	{
 		for (j = 0; j < Font->FontWidth; j++)
@@ -148,21 +163,7 @@ char OLED::Putc (char ch, FontDef_t* Font, uint8_t color)
 			}
 			b++;
 		}
-	}*/
-	
-	/* Go through font */
-	for (i = 0; i < Font->FontHeight; i++)
-	{
-		b = Font->data[(ch - 32) * Font->FontHeight + i];
-		for (j = 0; j < Font->FontWidth; j++) {
-			if ((b << j) & 0x8000) {
-				DrawPixel (SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (uint8_t) color);
-			} else {
-				DrawPixel (SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (uint8_t)!color);
-			}
-		}
-	}
-	
+	}	
 	SSD1306.CurrentX += Font->FontWidth;
 	return ch;
 }
@@ -291,7 +292,7 @@ void OLED::DrawRectangle (uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint8_
 void OLED::I2C_Init (void)
 {
 	hi2c1.Instance = I2C1;
-	hi2c1.Init.ClockSpeed = 4000000;
+	hi2c1.Init.ClockSpeed = 100000;
 	hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
 	hi2c1.Init.OwnAddress1 = 0;
 	hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
@@ -323,7 +324,7 @@ void OLED::I2C_Write (uint8_t address, uint8_t reg, uint8_t data)
 	uint8_t dt[2];
 	dt[0] = reg;
 	dt[1] = data;
-	HAL_I2C_Master_Transmit(&hi2c1, address, dt, 2, 10);
+	HAL_I2C_Master_Transmit(&(hi2c1), address, dt, 2, 10);
 }
 
 void OLED::I2C_Write_Command (uint8_t command)

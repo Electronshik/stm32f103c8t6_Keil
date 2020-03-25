@@ -27,9 +27,7 @@
 #include "stdio.h"
 #include "string"
 #include "settings.hpp"
-//#include "ssd1306.hpp"
-#include "fonts.h"
-#include "ssd1306.h"
+#include "ssd1306.hpp"
 #include "tda7300.hpp"
 
 /* Private includes ----------------------------------------------------------*/
@@ -53,6 +51,7 @@
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart1;
 I2C_HandleTypeDef hi2c2;
+OLED Display;
 
 osThreadId_t InitTaskHandle;
 osThreadId_t DisplayTaskHandle;
@@ -99,17 +98,39 @@ void StartControlTask (void *argument);
 int main (void)
 {
   /* USER CODE BEGIN 1 */
+	std::string Str;
+	uint8_t status;
   /* USER CODE END 1 */
   /* MCU Configuration--------------------------------------------------------*/
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
   /* USER CODE BEGIN Init */
   /* USER CODE END Init */
   /* Configure the system clock */
+  SystemClock_Config();
   /* USER CODE BEGIN SysInit */
   /* USER CODE END SysInit */
   /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_USART1_UART_Init();
+	MX_I2C2_Init();
+	TDA7300 Volume = TDA7300(&hi2c2);
   /* USER CODE BEGIN 2 */
-
+	Str = "Hello stm32f103";
+	printf("%s", (Str + "\r\n").c_str());
+	//status = Display.Init();
+	if (status == 0)
+	{
+		printf("LCD Error!");
+	}
+	Str = "Hello!";
+	
+	/*
+	Display.Puts((char*)Str.c_str(), &Font_7x10, 1);
+	Display.UpdateScreen();
+	Display.Puts("dfsgfds", &Font_7x10, 1);
+	Display.UpdateScreen();
+	Display.Fill(Display.COLOR_WHITE);*/
   /* USER CODE END 2 */
   /* Init scheduler */
 	 osKernelInitialize();
@@ -157,6 +178,7 @@ int main (void)
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
+  printf("osKernelStart.. \r\n");
   osKernelStart();
  
   /* We should never get here as control is now taken by the scheduler */
@@ -254,26 +276,13 @@ static void MX_GPIO_Init (void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    /**I2C1 GPIO Configuration    
-    PB6     ------> I2C1_SCL
-    PB7     ------> I2C1_SDA 
-    */
-  
-    __HAL_RCC_AFIO_CLK_ENABLE();
-		__HAL_RCC_I2C1_CLK_ENABLE();
-		__HAL_RCC_I2C2_CLK_ENABLE();
-    GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-   
 }
 
 /* USER CODE BEGIN 4 */
 void MX_I2C2_Init (void)
 {
 	hi2c2.Instance = I2C2;
-	hi2c2.Init.ClockSpeed = 400000;
+	hi2c2.Init.ClockSpeed = 100000;
 	hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
 	hi2c2.Init.OwnAddress1 = 0;
 	hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
@@ -298,57 +307,6 @@ void MX_I2C2_Init (void)
 void StartInitTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
-
-	std::string Str;
-	uint8_t status;
-  /* USER CODE END 1 */
-  /* MCU Configuration--------------------------------------------------------*/
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
-  /* USER CODE BEGIN Init */
-  /* USER CODE END Init */
-  /* Configure the system clock */
-  SystemClock_Config();
-	
-	MX_GPIO_Init();
-	MX_USART1_UART_Init();
-	MX_I2C2_Init();
-	TDA7300 Volume = TDA7300(&hi2c2);
-	//OLED Display = OLED();
-	
-	Str = "Hello stm32f103";
-	//printf("%s", (Str + "\r\n").c_str());
-	/*
-	status = Display.Init();
-	if (status == 0)
-	{
-		//printf("LCD Error!");
-	}
-	Str = "Hello!";
-	
-	Display.GotoXY (10,27);
-	Display.Puts ("OLED inited", &Font_7x10, 1);
-	Display.GotoXY (10,52);
-	Display.Puts ("Lutsai Alexander", &Font_7x10, 1);
-	Display.UpdateScreen (); //display
-	HAL_Delay(1000);
-	
-	Display.Puts((char*)Str.c_str(), &Font_7x10, 1);
-	Display.UpdateScreen();
-	Display.Puts("dfsgfds", &Font_7x10, 1);
-	Display.UpdateScreen();
-	Display.Fill(Display.COLOR_WHITE);
-	*/
-	
-	uint8_t res = SSD1306_Init();
-	printf("OLED init: %d\n", res);
-	SSD1306_GotoXY(10,27);
-	SSD1306_Puts("OLED inited", &Font_7x10, (SSD1306_COLOR_t) 1);
-	SSD1306_GotoXY(10,52);
-	SSD1306_Puts("Lutsai Alexander", &Font_7x10, (SSD1306_COLOR_t) 1);
-	SSD1306_UpdateScreen(); //display
-	HAL_Delay(1000);
-	
 	std::printf("StartInitTask.. \r\n");
 	//DisplayTaskHandle = osThreadNew(StartDisplayTask, NULL, &DisplayTask_attributes);
 	//VolumeTaskHandle = osThreadNew(StartVolumeTask, NULL, &VolumeTask_attributes);
