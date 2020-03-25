@@ -78,7 +78,7 @@ class OLED
 		unsigned int I2C_TIMEOUT;
 		I2C_HandleTypeDef hi2c1;
 		SSD1306_t SSD1306;
-		uint8_t Buffer_All[_WIDTH * _HEIGHT / 8 + 1];
+		uint8_t Buffer_All [_WIDTH * _HEIGHT / 8 + 1];
 		uint8_t *Buffer;
 
 		void I2C_Init (void);

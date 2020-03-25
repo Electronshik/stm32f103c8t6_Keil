@@ -70,9 +70,10 @@ stm32f103c8t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\rw/_traits.h
 stm32f103c8t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\cstdio
 stm32f103c8t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\rw/_error.h
 stm32f103c8t6\main.o: ../Inc/settings.hpp
-stm32f103c8t6\main.o: ../Inc/ssd1306.hpp
 stm32f103c8t6\main.o: ../Inc/fonts.h
 stm32f103c8t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+stm32f103c8t6\main.o: ../Inc/ssd1306.h
+stm32f103c8t6\main.o: ../Inc/i2c.h
 stm32f103c8t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 stm32f103c8t6\main.o: ../Inc/tda7300.hpp
 stm32f103c8t6\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.CC
