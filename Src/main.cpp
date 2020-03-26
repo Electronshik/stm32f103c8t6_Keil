@@ -51,7 +51,7 @@
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart1;
 I2C_HandleTypeDef hi2c2;
-OLED Display;
+DMA_HandleTypeDef hdma_i2c1_tx;
 
 osThreadId_t InitTaskHandle;
 osThreadId_t DisplayTaskHandle;
@@ -75,6 +75,7 @@ int std::fputc (int ch, FILE *f)
 void SystemClock_Config (void);
 static void MX_GPIO_Init (void);
 static void MX_USART1_UART_Init (void);
+static void MX_DMA_Init(void);
 static void MX_I2C2_Init (void);
 void StartInitTask (void *argument);
 void StartDisplayTask (void *argument);
@@ -112,25 +113,26 @@ int main (void)
   /* USER CODE END SysInit */
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+	MX_DMA_Init();
   MX_USART1_UART_Init();
 	MX_I2C2_Init();
-	TDA7300 Volume = TDA7300(&hi2c2);
+	TDA7300 Volume = TDA7300 (&hi2c2);
+	OLED Display = OLED ();
   /* USER CODE BEGIN 2 */
 	Str = "Hello stm32f103";
 	printf("%s", (Str + "\r\n").c_str());
-	//status = Display.Init();
+	status = Display.Init();
 	if (status == 0)
 	{
 		printf("LCD Error!");
 	}
 	Str = "Hello!";
-	
-	/*
+
 	Display.Puts((char*)Str.c_str(), &Font_7x10, 1);
 	Display.UpdateScreen();
 	Display.Puts("dfsgfds", &Font_7x10, 1);
 	Display.UpdateScreen();
-	Display.Fill(Display.COLOR_WHITE);*/
+	Display.Fill(Display.COLOR_WHITE);
   /* USER CODE END 2 */
   /* Init scheduler */
 	 osKernelInitialize();
@@ -253,6 +255,22 @@ static void MX_USART1_UART_Init(void)
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
+
+}
+
+/** 
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init (void) 
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
 
 }
 
